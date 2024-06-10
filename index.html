@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadro de Anotações</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #ecf0f1; /* Light background */
+            color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            flex-direction: column; /* Stack elements vertically */
+        }
+
+        .chalkboard {
+            background-color: #ffffff; /* Light background for the chalkboard */
+            width: 85%; /* Increase width */
+            height: 70%; /* Increase height */
+            border: 15px solid #bdc3c7; /* Lighter border */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+            padding: 20px;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px; /* Add space between chalkboard and buttons */
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center the content vertically */
+        }
+
+        .chalkboard .note-content {
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            background: none;
+            border: none;
+            outline: none;
+            color: #2c3e50; /* Dark text color */
+            font-size: 1.2em;
+            line-height: 1.6;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 2;
+            overflow: auto;
+            position: absolute; /* Position absolute to overlay canvas */
+            top: 0;
+            left: 0;
+            contentEditable: true; /* Make content editable */
+        }
+
+        .chalkboard textarea {
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            background: none;
+            border: none;
+            outline: none;
+            color: #2c3e50; /* Dark text color */
+            font-size: 1.2em;
+            line-height: 1.6;
+            resize: none;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 2;
+            display: none; /* Start hidden */
+        }
+
+        .chalkboard textarea::placeholder {
+            color: #7f8c8d; /* Lighter placeholder color */
+        }
+
+        .buttons-container {
+            width: 85%; /* Match the width of the chalkboard */
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 3;
+        }
+
+        .button {
+            background-color: #2980b9; /* Blue button background */
+            color: #ecf0f1; /* Light text color */
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 4;
+        }
+
+        .modal-content {
+            background: #ffffff; /* Light background for modal */
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #2c3e50; /* Dark text color */
+        }
+
+        .modal-content input {
+            width: 50px;
+            padding: 5px;
+            margin: 10px;
+            border: 1px solid #bdc3c7; /* Lighter border */
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #2980b9; /* Blue button background */
+            color: #ecf0f1; /* Light text color */
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #tableContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Add scroll if content overflows */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #tableContainer table {
+            width: 80%; /* Make table fill more of the container */
+            height: auto;
+            border-collapse: collapse;
+            margin: auto; /* Center the table */
+        }
+
+        #tableContainer td, #tableContainer th {
+            border: 1px solid #7f8c8d; /* Lighter border color */
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #ecf0f1; /* Light background for table cells */
+            color: #2c3e50; /* Dark text color */
+            cursor: text; /* Change cursor to text when hovering over cells */
+        }
+
+        #tableContainer th {
+            background-color: #bdc3c7; /* Lighter background for table headers */
+            color: #2c3e50; /* Dark text color */
+            font-weight: bold; /* Bold text for headers */
+            text-transform: uppercase; /* Uppercase for headers */
+        }
+
+        #drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4; /* Ensures the canvas is on top of other elements */
+        }
+    </style>
+</head>
+<body>
+    <div class="chalkboard" id="chalkboard">
+        <div class="note-content" id="noteContent"></div>
+        <textarea placeholder="Escreva suas anotações aqui..." id="noteTextArea"></textarea>
+        <div id="tableContainer"></div>
+        <canvas id="drawingCanvas"></canvas>
+    </div>
+    <div class="buttons-container">
+        <button class="button mode-text" onclick="activateTextMode()">Modo Texto</button>
+        <button class="button create-table" onclick="openModal()">Modo Tabela</button>
+        <button class="button" onclick="activateDrawingMode()">Marcações</button>
+    </div>
+
+    <div class="modal" id="tableModal">
+        <div class="modal-content">
+            <h2>Criar Tabela</h2>
+            <label for="rows">Linhas:</label>
+            <input type="number" id="rows" min="1" max="20" value="3">
+            <label for="cols">Colunas:</label>
+            <input type="number" id="cols" min="1" max="20" value="3">
+            <button onclick="createTable()">Criar</button>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('noteTextArea');
+        const noteContent = document.getElementById('noteContent');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableModal = document.getElementById('tableModal');
+        const drawingCanvas = document.getElementById('drawingCanvas');
+        const ctx = drawingCanvas.getContext('2d');
+
+        let drawing = false;
+
+        function activateTextMode() {
+            textarea.style.display = 'block'; // Show textarea
+            noteContent.style.display = 'none'; // Hide note content
+            tableContainer.style.display = 'none'; // Hide table
+            drawingCanvas.style.display = 'none'; // Hide drawing canvas
+        }
+
+        function openModal() {
+            tableModal.style.display = 'flex';
+        }
+
+        function createTable() {
+            const rows = document.getElementById('rows').value;
+            const cols = document.getElementById('cols').value;
+            let tableHTML = '<table>';
+            tableHTML += '<thead><tr>';
+            for (let j = 0; j < cols; j++) {
+                tableHTML += '<th contenteditable="true">Título ' + (j + 1) + '</th>';
+            }
+            tableHTML += '</tr></thead><tbody>';
+            for (let i = 0; i < rows; i++) {
+                tableHTML += '<tr>';
+                for (let j = 0; j < cols; j++) {
+                    tableHTML += '<td contenteditable="true"></td>';
+                }
+                tableHTML += '</tr>';
+            }
+            tableHTML += '</tbody></table>';
+
+            tableContainer.innerHTML = tableHTML;
+            tableContainer.style.display = 'flex'; // Show table and center it
+            tableModal.style.display = 'none';
+        }
+
+        function activateDrawingMode() {
+            drawingCanvas.style.display = 'block';
+            resizeCanvas();
+            ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            drawing = false;
+
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mouseup', stopDrawing);
+            drawingCanvas.addEventListener('mousemove', draw);
+        }
+
+        function startDrawing(event) {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.clientX - drawingCanvas.getBoundingClientRect().left, event.clientY - drawingCanvas.getBoundingClientRect().top);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+        }
+
+        function draw(event) {
+            if (!drawing) return;
+            ctx.lineTo(event.clientX - drawingCanvas.getBoundingClientRect().left, event.clientY - drawingCanvas.getBoundingClientRect().top);
+            ctx.stroke();
+        }
+
+        function resizeCanvas() {
+            drawingCanvas.width = drawingCanvas.clientWidth;
+            drawingCanvas.height = drawingCanvas.clientHeight;
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target == tableModal) {
+                tableModal.style.display = 'none';
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        activateTextMode(); // Initialize in text mode
+    </script>
+</body>
+</html>

@@ -3,80 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quadro de Anotações</title>
+    <title>Lousa Digital</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
 
         body {
             margin: 0;
             font-family: 'Courier New', Courier, monospace;
-            background-color: #ecf0f1; /* Light background */
+            background-color: #ecf0f1;
             color: #2c3e50;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             position: relative;
-            flex-direction: column; /* Stack elements vertically */
+            flex-direction: column;
         }
 
         .chalkboard {
-            background-color: #ffffff; /* Light background for the chalkboard */
-            width: 85%; /* Increase width */
-            height: 70%; /* Increase height */
-            border: 15px solid #bdc3c7; /* Lighter border */
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+            background-color: #ffffff;
+            width: 85%;
+            height: 70%;
+            border: 15px solid #bdc3c7;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             padding: 20px;
             position: relative;
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 30px; /* Add space between chalkboard and buttons */
+            margin-bottom: 30px;
             display: flex;
             justify-content: center;
-            align-items: center; /* Center the content vertically */
+            align-items: center;
         }
 
-        .chalkboard .note-content {
+        .note-content {
             width: calc(100% - 40px);
             height: calc(100% - 40px);
             background: none;
             border: none;
             outline: none;
-            color: #2c3e50; /* Dark text color */
+            color: #2c3e50;
             font-size: 1.2em;
             line-height: 1.6;
             padding: 10px;
             font-family: 'Courier New', Courier, monospace;
             z-index: 2;
             overflow: auto;
-            position: absolute; /* Position absolute to overlay canvas */
+            position: absolute;
             top: 0;
             left: 0;
-            contentEditable: true; /* Make content editable */
+            contenteditable: true;
         }
 
-        .chalkboard textarea {
+        .note-textarea {
             width: calc(100% - 40px);
             height: calc(100% - 40px);
             background: none;
             border: none;
             outline: none;
-            color: #2c3e50; /* Dark text color */
+            color: #2c3e50;
             font-size: 1.2em;
             line-height: 1.6;
             resize: none;
             padding: 10px;
             font-family: 'Courier New', Courier, monospace;
             z-index: 2;
-            display: none; /* Start hidden */
+            display: none;
         }
 
-        .chalkboard textarea::placeholder {
-            color: #7f8c8d; /* Lighter placeholder color */
+        .note-textarea::placeholder {
+            color: #7f8c8d;
         }
 
         .buttons-container {
-            width: 85%; /* Match the width of the chalkboard */
+            width: 85%;
             display: flex;
             justify-content: center;
             gap: 10px;
@@ -84,8 +84,8 @@
         }
 
         .button {
-            background-color: #2980b9; /* Blue button background */
-            color: #ecf0f1; /* Light text color */
+            background-color: #2980b9;
+            color: #ecf0f1;
             border: none;
             padding: 10px 20px;
             font-size: 1em;
@@ -107,80 +107,81 @@
         }
 
         .modal-content {
-            background: #ffffff; /* Light background for modal */
+            background: #ffffff;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            color: #2c3e50; /* Dark text color */
+            color: #2c3e50;
         }
 
         .modal-content input {
             width: 50px;
             padding: 5px;
             margin: 10px;
-            border: 1px solid #bdc3c7; /* Lighter border */
+            border: 1px solid #bdc3c7;
         }
 
         .modal-content button {
             margin-top: 10px;
             padding: 10px 20px;
-            background-color: #2980b9; /* Blue button background */
-            color: #ecf0f1; /* Light text color */
+            background-color: #2980b9;
+            color: #ecf0f1;
             border: none;
             cursor: pointer;
             border-radius: 5px;
         }
 
         #tableContainer {
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             width: 100%;
             height: 100%;
-            overflow: auto; /* Add scroll if content overflows */
+            overflow: auto;
             position: absolute;
             top: 0;
             left: 0;
         }
 
         #tableContainer table {
-            width: 80%; /* Make table fill more of the container */
+            width: 80%;
             height: auto;
             border-collapse: collapse;
-            margin: auto; /* Center the table */
+            margin: auto;
         }
 
         #tableContainer td, #tableContainer th {
-            border: 1px solid #7f8c8d; /* Lighter border color */
+            border: 1px solid #7f8c8d;
             padding: 8px;
             text-align: center;
             vertical-align: middle;
-            background-color: #ecf0f1; /* Light background for table cells */
-            color: #2c3e50; /* Dark text color */
-            cursor: text; /* Change cursor to text when hovering over cells */
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            cursor: text;
         }
 
         #tableContainer th {
-            background-color: #bdc3c7; /* Lighter background for table headers */
-            color: #2c3e50; /* Dark text color */
-            font-weight: bold; /* Bold text for headers */
-            text-transform: uppercase; /* Uppercase for headers */
+            background-color: #bdc3c7;
+            color: #2c3e50;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
         #drawingCanvas {
+            display: none;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 4; /* Ensures the canvas is on top of other elements */
+            z-index: 4;
         }
     </style>
 </head>
 <body>
     <div class="chalkboard" id="chalkboard">
         <div class="note-content" id="noteContent"></div>
-        <textarea placeholder="Escreva suas anotações aqui..." id="noteTextArea"></textarea>
+        <textarea placeholder="Escreva suas anotações aqui..." class="note-textarea" id="noteTextArea"></textarea>
         <div id="tableContainer"></div>
         <canvas id="drawingCanvas"></canvas>
     </div>
@@ -216,6 +217,7 @@
             noteContent.style.display = 'none'; // Hide note content
             tableContainer.style.display = 'none'; // Hide table
             drawingCanvas.style.display = 'none'; // Hide drawing canvas
+            textarea.placeholder = "Escreva suas anotações aqui..."; // Show placeholder in text mode
         }
 
         function openModal() {
@@ -243,6 +245,7 @@
             tableContainer.innerHTML = tableHTML;
             tableContainer.style.display = 'flex'; // Show table and center it
             tableModal.style.display = 'none';
+            textarea.style.display = 'none'; // Hide textarea
         }
 
         function activateDrawingMode() {
